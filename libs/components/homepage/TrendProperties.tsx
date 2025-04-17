@@ -8,6 +8,10 @@ import { Autoplay, Navigation, Pagination } from 'swiper';
 import { Property } from '../../types/property/property';
 import { PropertiesInquiry } from '../../types/property/property.input';
 import TrendPropertyCard from './TrendPropertyCard';
+import { useMutation, useQuery } from '@apollo/client';
+import { GET_PROPERTIES } from '../../../apollo/user/query';
+import { T } from '../../types/common';
+import { LIKE_TARGET_PROPERTY } from '../../../apollo/user/mutation';
 
 interface TrendPropertiesProps {
 	initialInput: PropertiesInquiry;
@@ -19,6 +23,24 @@ const TrendProperties = (props: TrendPropertiesProps) => {
 	const [trendProperties, setTrendProperties] = useState<Property[]>([]);
 
 	/** APOLLO REQUESTS **/
+
+	const [likeTargetproperty] = useMutation(LIKE_TARGET_PROPERTY);
+	
+	const {
+		loading: getPropertiesLoading,
+		data: getPropertiesData,
+		error: getPropertiesError,
+		refetch: getPropertiesRefetch,
+	} = useQuery(GET_PROPERTIES, {
+		fetchPolicy: 'cache-and-network', // cach + =>network
+		variables: { input: initialInput },
+		notifyOnNetworkStatusChange: true,
+		onCompleted: (data: T) => {
+			setTrendProperties(data?.getProperties?.list);
+		},
+	});
+
+
 	/** HANDLERS **/
 
 	if (trendProperties) console.log('trendProperties:', trendProperties);
