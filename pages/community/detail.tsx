@@ -31,7 +31,6 @@ import {
 	sweetTopSmallSuccessAlert,
 } from '../../libs/sweetAlert';
 import { CommentUpdate } from '../../libs/types/comment/comment.update';
-
 const ToastViewerComponent = dynamic(() => import('../../libs/components/community/TViewer'), { ssr: false });
 
 export const getStaticProps = async ({ locale }: any) => ({
@@ -122,20 +121,20 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 		);
 	};
 
-	/**                                user->Auth bolganmi?, qaysi agent ga like bosyapti? */
-	const likeBoArticleHandler = async (user: any, id: any) => {
+	//                                 user->Auth bolganmi?, id: qaysi agent ga like bosyapti? */
+	const likeBoardArticleHandler = async (user: any, id: any) => {
 		try {
 			if (likeLoading) return;
 			if (!id) return;
-			if (!user._id) throw new Error(Messages.error2); // Plz login first
+			if (!user._id) throw new Error(Messages.error2);
 
 			setLikeLoading(true);
 
 			//execute likeTargetBoardArticles  Mutationni ishga tushirish
-			/**(qaysi article like bosmoqchimiz) **/
+			// qaysi article like bosmoqchimiz
 			await likeTargetBoardArticle({ variables: { input: id } }); // POSTMANdagi variable=> input: id
-			//execute boardArticlesRefetch
-			/**Ohirgi qiymatlarni qayta chaqiriw */
+			// execute boardArticlesRefetch
+			// oxirgi qiymatlarni qayta chaqiriw 
 			await boardArticleRefetch({ input: articleId }); // likedan keyin Articles listni to`liq refetch qilamiz
 
 			await sweetTopSmallSuccessAlert('success', 800);
@@ -147,7 +146,7 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 		}
 	};
 
-	const creteCommentHandler = async () => {
+	const createCommentHandler = async () => {
 		if (!comment) return;
 		try {
 			if (!user._id) throw new Error(Messages.error2); // Plz login first
@@ -325,13 +324,12 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 											</Stack>
 										</Stack>
 										<Stack className="info">
-											<Stack className="icon-info">
+										<Stack className="icon-info">
 												{boardArticle?.meLiked && boardArticle?.meLiked[0]?.myFavorite ? (
-													<ThumbUpAltIcon onClick={() => likeBoArticleHandler(user, boardArticle?._id)} />
+													<ThumbUpAltIcon onClick={() => likeBoardArticleHandler(user, boardArticle?._id)} />
 												) : (
-													<ThumbUpOffAltIcon onClick={() => likeBoArticleHandler(user, boardArticle?._id)} />
+													<ThumbUpOffAltIcon onClick={() => likeBoardArticleHandler(user, boardArticle?._id)} />
 												)}
-
 												<Typography className="text">{boardArticle?.articleLikes}</Typography>
 											</Stack>
 											<Stack className="divider"></Stack>
@@ -342,7 +340,6 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 											<Stack className="divider"></Stack>
 											<Stack className="icon-info">
 												{total > 0 ? <ChatIcon /> : <ChatBubbleOutlineRoundedIcon />}
-
 												<Typography className="text">{total}</Typography>
 											</Stack>
 										</Stack>
@@ -353,11 +350,7 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 									<Stack className="like-and-dislike">
 										<Stack className="top">
 											<Button>
-												{boardArticle?.meLiked && boardArticle?.meLiked[0]?.myFavorite ? (
-													<ThumbUpAltIcon onClick={() => likeBoArticleHandler(user, boardArticle?._id)} />
-												) : (
-													<ThumbUpOffAltIcon onClick={() => likeBoArticleHandler(user, boardArticle?._id)} />
-												)}
+												{boardArticle?.meLiked ? <ThumbUpAltIcon /> : <ThumbUpOffAltIcon />}
 												<Typography className="text">{boardArticle?.articleLikes}</Typography>
 											</Button>
 										</Stack>
@@ -381,7 +374,7 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 										/>
 										<Stack className="button-box">
 											<Typography>{wordsCnt}/100</Typography>
-											<Button onClick={creteCommentHandler}>comment</Button>
+											<Button onClick={createCommentHandler}>comment</Button>
 										</Stack>
 									</Stack>
 								</Stack>
@@ -530,7 +523,7 @@ CommunityDetail.defaultProps = {
 		limit: 5,
 		sort: 'createdAt',
 		direction: 'DESC',
-		search: { commentRefId: '' }, // commentimizni bowlangich qiymati bow string boladi
+		search: { commentRefId: '' },
 	},
 };
 
