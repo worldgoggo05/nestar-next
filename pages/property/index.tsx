@@ -11,6 +11,10 @@ import { Property } from '../../libs/types/property/property';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
 import { Direction } from '../../libs/enums/common.enum';
+import { useMutation, useQuery } from '@apollo/client';
+import { LIKE_TARGET_PROPERTY } from '../../apollo/user/mutation';
+import { GET_PROPERTIES } from '../../apollo/user/query';
+import { T } from '../../libs/types/common';
 
 export const getStaticProps = async ({ locale }: any) => ({
 	props: {
@@ -32,6 +36,21 @@ const PropertyList: NextPage = ({ initialInput, ...props }: any) => {
 	const [filterSortName, setFilterSortName] = useState('New');
 
 	/** APOLLO REQUESTS **/
+	const [likeTargetProperty] = useMutation(LIKE_TARGET_PROPERTY);
+	const {
+		loading: getPropertiesLoading, //-> loading jarayoni yani backend dan data olish jarayonida qanaqadur animatsiyalarni korsatishimiz mumkun.
+		data: getPropertiesData, //-> data kirib kelgandan keyin onComplete etapi ishga tushadi.
+		error: getPropertiesError, //-> data kirib kelgunga qadar qandaydur errorlar hosil bolsa errorni korsatish.
+		refetch: getPropertiesRefetch,
+	} = useQuery(GET_PROPERTIES, {
+		fetchPolicy: 'network-only', //->chashimizdsan foydalanmagan xolda togridan togri faqatgina bizi backentimizdan qabul etayotgan malumotlarni bizga taqdim etsin
+		variables: { input: searchFilter }, //-> variable lar bu qaysi turdagi malumotlarni serverga yuborish
+		notifyOnNetworkStatusChange: true, //-> va qayta malumotlar ozgarganda update qilishda bu mantiq ishlatiladi. va bullar hammasi options ichida mujassam boladi.
+		onCompleted: (data: T) => {
+			setProperties(data?.getProperties?.list); //-> backend dan birinchi data olinganda onComplete ishga tushadi.
+			setTotal(data?.getProperties?.metaCounter[0]?.total);
+		},
+	});
 
 	/** LIFECYCLES **/
 	useEffect(() => {
