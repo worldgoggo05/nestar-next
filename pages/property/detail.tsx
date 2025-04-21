@@ -32,7 +32,7 @@ import { T } from '../../libs/types/common';
 import { Direction, Message } from '../../libs/enums/common.enum';
 import { CREATE_COMMENT, LIKE_TARGET_PROPERTY } from '../../apollo/user/mutation';
 import { sweetErrorHandling, sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
-import { GET_COMMENTS } from '../../apollo/admin/query';
+import { GET_COMMENTS } from '../../apollo/user/query';
 
 SwiperCore.use([Autoplay, Navigation, Pagination]);
 
