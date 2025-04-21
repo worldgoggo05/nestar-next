@@ -171,7 +171,6 @@ export const PropertyPanelList = (props: PropertyPanelListType) => {
 													<div>
 														<Avatar alt="Remy Sharp" src={propertyImage} sx={{ ml: '2px', mr: '10px' }} />
 													</div>
-
 													<div style={{ marginTop: '10px' }}>{property.propertyTitle}</div>
 												</Stack>
 											)}

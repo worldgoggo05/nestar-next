@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Avatar, Box, Stack } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
+import Badge from '@mui/material/Badge';
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen';
 import MarkChatUnreadIcon from '@mui/icons-material/MarkChatUnread';
 import { useRouter } from 'next/router';
@@ -53,19 +54,19 @@ const Chat = () => {
 	const chatContentRef = useRef<HTMLDivElement>(null);
 	const [messagesList, setMessagesList] = useState<MessagePayload[]>([]);
 	const [onlineUsers, setOnlineUsers] = useState<number>(0);
+	const textInput = useRef(null);
 	const [messageInput, setMessageInput] = useState<string>('');
 	const [open, setOpen] = useState(false);
 	const [openButton, setOpenButton] = useState(false);
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
 	const socket = useReactiveVar(socketVar);
-
 	/** LIFECYCLES **/
+
 	useEffect(() => {
 		socket.onmessage = (msg) => {
 			const data = JSON.parse(msg.data);
-			console.log('WebSocket message: ', data);
-
+			console.log('Websocket message', data);
 			switch (data.event) {
 				case 'info':
 					const newInfo: InfoPayload = data;
@@ -83,7 +84,6 @@ const Chat = () => {
 			}
 		};
 	}, [socket, messagesList]);
-
 	useEffect(() => {
 		const timeoutId = setTimeout(() => {
 			setOpenButton(true);
@@ -125,6 +125,7 @@ const Chat = () => {
 			setMessageInput('');
 		}
 	};
+
 	return (
 		<Stack className="chatting">
 			{openButton ? (
@@ -145,8 +146,11 @@ const Chat = () => {
 							</Box>
 							{messagesList.map((ele: MessagePayload) => {
 								const { text, memberData } = ele;
+								console.log('RESULTTT', ele);
+								console.log('USER', user);
+
 								const memberImage = memberData?.memberImage
-									? `${REACT_APP_API_URL}/${memberData.memberImage}`
+									? `${REACT_APP_API_URL}/${user?.memberImage}`
 									: '/img/profile/defaultUser.svg';
 
 								return memberData?._id === user?._id ? (
@@ -167,6 +171,8 @@ const Chat = () => {
 									</Box>
 								);
 							})}
+
+							<></>
 						</Stack>
 					</ScrollableFeed>
 				</Box>
@@ -174,9 +180,9 @@ const Chat = () => {
 					<input
 						type={'text'}
 						name={'message'}
+						value={messageInput}
 						className={'msg-input'}
 						placeholder={'Type message'}
-						value={messageInput}
 						onChange={getInputMessageHandler}
 						onKeyDown={getKeyHandler}
 					/>

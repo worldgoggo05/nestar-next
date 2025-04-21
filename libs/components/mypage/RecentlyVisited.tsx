@@ -5,8 +5,8 @@ import { Pagination, Stack, Typography } from '@mui/material';
 import PropertyCard from '../property/PropertyCard';
 import { Property } from '../../types/property/property';
 import { T } from '../../types/common';
-import { useQuery } from '@apollo/client';
 import { GET_VISITED } from '../../../apollo/user/query';
+import { useQuery } from '@apollo/client';
 
 const RecentlyVisited: NextPage = () => {
 	const device = useDeviceDetect();
@@ -20,18 +20,16 @@ const RecentlyVisited: NextPage = () => {
 		loading: getVisitedLoading,
 		data: getVisitedData,
 		error: getVisitedError,
-		refetch:getVisitedRefetch,
+		refetch: getVisitedRefetch,
 	} = useQuery(GET_VISITED, {
 		fetchPolicy: 'network-only',
-		variables: {
-			input:searchVisited,
+		variables: { input: searchVisited },
+		notifyOnNetworkStatusChange: true,
+		onCompleted: (data: T) => {
+			setRecentlyVisited(data?.getVisited?.list);
+			setTotal(data?.getVisited?.metaCounter[0]?.total || 0);
 		},
-		onCompleted(data: T) {
-			setRecentlyVisited(data.getVisited?.list);
-			setTotal(data.getVisited?.metaCounter?.[0]?.total || 0);
-		}
-	})
-
+	});
 
 	/** HANDLERS **/
 	const paginationHandler = (e: T, value: number) => {

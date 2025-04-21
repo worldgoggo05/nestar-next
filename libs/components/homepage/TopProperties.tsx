@@ -8,12 +8,12 @@ import { Autoplay, Navigation, Pagination } from 'swiper';
 import TopPropertyCard from './TopPropertyCard';
 import { PropertiesInquiry } from '../../types/property/property.input';
 import { Property } from '../../types/property/property';
-import { useMutation, useQuery } from '@apollo/client';
 import { GET_PROPERTIES } from '../../../apollo/user/query';
-import { T } from '../../types/common';
+import { useMutation, useQuery } from '@apollo/client';
 import { LIKE_TARGET_PROPERTY } from '../../../apollo/user/mutation';
-import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
+import { T } from '../../types/common';
 import { Message } from '../../enums/common.enum';
+import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
 
 interface TopPropertiesProps {
 	initialInput: PropertiesInquiry;
@@ -24,16 +24,16 @@ const TopProperties = (props: TopPropertiesProps) => {
 	const device = useDeviceDetect();
 	const [topProperties, setTopProperties] = useState<Property[]>([]);
 
-	/** APOLLO REQUESTS **/
-	const [likeTargetproperty] = useMutation(LIKE_TARGET_PROPERTY);
+	const [likeTargetProperty] = useMutation(LIKE_TARGET_PROPERTY);
 
+	/** APOLLO REQUESTS **/
 	const {
 		loading: getPropertiesLoading,
 		data: getPropertiesData,
 		error: getPropertiesError,
 		refetch: getPropertiesRefetch,
 	} = useQuery(GET_PROPERTIES, {
-		fetchPolicy: 'cache-and-network', // cach + =>network
+		fetchPolicy: 'cache-and-network',
 		variables: { input: initialInput },
 		notifyOnNetworkStatusChange: true,
 		onCompleted: (data: T) => {
@@ -42,17 +42,19 @@ const TopProperties = (props: TopPropertiesProps) => {
 	});
 
 	/** HANDLERS **/
+
 	const likePropertyHandler = async (user: T, id: string) => {
 		try {
 			if (!id) return;
 			if (!user._id) throw new Error(Message.NOT_AUTHENTICATED);
-			//execute likeTargetproperty  Mutationni ishga tushirish
-			await likeTargetproperty({ variables: { input: id } });
-			//execute getPropertiesRefetch
+
+			await likeTargetProperty({ variables: { input: id } });
+
 			await getPropertiesRefetch({ input: initialInput });
+
 			await sweetTopSmallSuccessAlert('success', 800);
 		} catch (err: any) {
-			console.log('ERROR,likePropertyHandler:', err.message);
+			console.log('Erron on likePropertyHandler', err);
 			sweetMixinErrorAlert(err.message).then();
 		}
 	};

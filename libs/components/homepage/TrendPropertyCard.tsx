@@ -22,8 +22,9 @@ const TrendPropertyCard = (props: TrendPropertyCardProps) => {
 	const user = useReactiveVar(userVar);
 
 	/** HANDLERS **/
+
 	const pushDetailHandler = async (propertyId: string) => {
-		console.log('propertyId:', propertyId);
+		console.log(propertyId);
 		await router.push({ pathname: '/property/detail', query: { id: propertyId } });
 	};
 
@@ -34,66 +35,19 @@ const TrendPropertyCard = (props: TrendPropertyCardProps) => {
 					component={'div'}
 					className={'card-img'}
 					style={{ backgroundImage: `url(${REACT_APP_API_URL}/${property?.propertyImages[0]})` }}
-					onClick={() => pushDetailHandler(property._id)}
+					onClick={() => {
+						pushDetailHandler(property._id);
+					}}
 				>
 					<div>${property.propertyPrice}</div>
 				</Box>
 				<Box component={'div'} className={'info'}>
-					<strong className={'title'} onClick={() => pushDetailHandler(property._id)}>
-						{property.propertyTitle}{' '}
-					</strong>
-					<p className={'desc'}>{property.propertyDesc ?? 'no description'}</p>
-					<div className={'options'}>
-						<div>
-							<img src="/img/icons/bed.svg" alt="" />
-							<span>{property.propertyBeds} bed</span>
-						</div>
-						<div>
-							<img src="/img/icons/room.svg" alt="" />
-							<span>{property.propertyRooms} rooms</span>
-						</div>
-						<div>
-							<img src="/img/icons/expand.svg" alt="" />
-							<span>{property.propertySquare} m2</span>
-						</div>
-					</div>
-					<Divider sx={{ mt: '15px', mb: '17px' }} />
-					<div className={'bott'}>
-						<p>
-							{property.propertyRent ? 'Rent' : ''} {property.propertyRent && property.propertyBarter && '/'}{' '}
-							{property.propertyBarter ? 'Barter' : ''}
-						</p>
-						<div className="view-like-box">
-							<IconButton color={'default'}>
-								<RemoveRedEyeIcon />
-							</IconButton>
-							<Typography className="view-cnt">{property?.propertyViews}</Typography>
-							<IconButton color={'default'} onClick={() => likePropertyHandler(user, property?._id)}>
-								{property?.meLiked && property?.meLiked[0]?.myFavorite ? (
-									<FavoriteIcon style={{ color: 'red' }} />
-								) : (
-									<FavoriteIcon />
-								)}
-							</IconButton>
-							<Typography className="view-cnt">{property?.propertyLikes}</Typography>
-						</div>
-					</div>
-				</Box>
-			</Stack>
-		);
-	} else {
-		return (
-			<Stack className="trend-card-box" key={property._id}>
-				<Box
-					component={'div'}
-					className={'card-img'}
-					style={{ backgroundImage: `url(${REACT_APP_API_URL}/${property?.propertyImages[0]})` }}
-					onClick={() => pushDetailHandler(property._id)}
-				>
-					<div>${property.propertyPrice}</div>
-				</Box>
-				<Box component={'div'} className={'info'}>
-					<strong className={'title'} onClick={() => pushDetailHandler(property._id)}>
+					<strong
+						className={'title'}
+						onClick={() => {
+							pushDetailHandler(property._id);
+						}}
+					>
 						{property.propertyTitle}
 					</strong>
 					<p className={'desc'}>{property.propertyDesc ?? 'no description'}</p>
@@ -122,7 +76,68 @@ const TrendPropertyCard = (props: TrendPropertyCardProps) => {
 								<RemoveRedEyeIcon />
 							</IconButton>
 							<Typography className="view-cnt">{property?.propertyViews}</Typography>
+							<IconButton color={'default'}>
+								{property?.meLiked && property?.meLiked[0]?.myFavorite ? (
+									<FavoriteIcon style={{ color: 'red' }} />
+								) : (
+									<FavoriteIcon />
+								)}
+							</IconButton>
+							<Typography className="view-cnt">{property?.propertyLikes}</Typography>
+						</div>
+					</div>
+				</Box>
+			</Stack>
+		);
+	} else {
+		return (
+			<Stack className="trend-card-box" key={property._id}>
+				<Box
+					component={'div'}
+					className={'card-img'}
+					style={{ backgroundImage: `url(${REACT_APP_API_URL}/${property?.propertyImages[0]})` }}
+					onClick={() => {
+						pushDetailHandler(property._id);
+					}}
+				>
+					<div>${property.propertyPrice}</div>
+				</Box>
+				<Box component={'div'} className={'info'}>
+					<strong
+						className={'title'}
+						onClick={() => {
+							pushDetailHandler(property._id);
+						}}
+					>
+						{property.propertyTitle}
+					</strong>
+					<p className={'desc'}>{property.propertyDesc ?? 'no description'}</p>
+					<div className={'options'}>
+						<div>
+							<img src="/img/icons/bed.svg" alt="" />
+							<span>{property.propertyBeds} bed</span>
+						</div>
+						<div>
+							<img src="/img/icons/room.svg" alt="" />
+							<span>{property.propertyRooms} rooms</span>
+						</div>
+						<div>
+							<img src="/img/icons/expand.svg" alt="" />
+							<span>{property.propertySquare} m2</span>
+						</div>
+					</div>
+					<Divider sx={{ mt: '15px', mb: '17px' }} />
+					<div className={'bott'}>
+						<p>
+							{property.propertyRent ? 'Rent' : ''} {property.propertyRent && property.propertyBarter && '/'}{' '}
+							{property.propertyBarter ? 'Barter' : ''}
+						</p>
+						<div className="view-like-box">
 							<IconButton color={'default'} onClick={() => likePropertyHandler(user, property?._id)}>
+								<RemoveRedEyeIcon />
+							</IconButton>
+							<Typography className="view-cnt">{property?.propertyViews}</Typography>
+							<IconButton color={'default'}>
 								{property?.meLiked && property?.meLiked[0]?.myFavorite ? (
 									<FavoriteIcon style={{ color: 'red' }} />
 								) : (

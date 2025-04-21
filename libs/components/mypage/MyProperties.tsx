@@ -24,8 +24,8 @@ const MyProperties: NextPage = ({ initialInput, ...props }: any) => {
 
 	/** APOLLO REQUESTS **/
 
-
 	const [updateProperty] = useMutation(UPDATE_PROPERTY);
+
 	const {
 		loading: getAgentPropertiesLoading,
 		data: getAgentPropertiesData,
@@ -52,38 +52,23 @@ const MyProperties: NextPage = ({ initialInput, ...props }: any) => {
 
 	const deletePropertyHandler = async (id: string) => {
 		try {
-			if (await sweetConfirmAlert(' are you sure to delete this property?')) {
-				await updateProperty({
-					variables: {
-						input: {
-							_id: id,
-							propertyStatus: 'DELETE',
-						},
-					},
-				});
-
-				await getAgentPropertiesRefetch({ input: searchFilter });
+			if (await sweetConfirmAlert('Are you sure to delete this property?')) {
+				await updateProperty({ variables: { input: { _id: id, propertyStatus: 'DELETE' } } });
 			}
+			await getAgentPropertiesRefetch({ input: searchFilter });
 		} catch (err: any) {
-			await sweetErrorHandling(err);
+			sweetErrorHandling(err);
 		}
 	};
 
 	const updatePropertyHandler = async (status: string, id: string) => {
 		try {
-			if (await sweetConfirmAlert(` are you sure change to ${status} status?`)) {
-				await updateProperty({
-					variables: {
-						input: {
-							_id: id,
-							propertyStatus: status,
-						},
-					},
-				});
-				await getAgentPropertiesRefetch({ input: searchFilter });
+			if (await sweetConfirmAlert(`Are you sure to change ${status} status?`)) {
+				await updateProperty({ variables: { input: { _id: id, propertyStatus: status } } });
 			}
+			await getAgentPropertiesRefetch({ input: searchFilter });
 		} catch (err: any) {
-			await sweetErrorHandling(err);
+			sweetErrorHandling(err);
 		}
 	};
 
@@ -180,27 +165,3 @@ MyProperties.defaultProps = {
 };
 
 export default MyProperties;
-
-
-
-
-// <Stack className="ethan-card-box">
-// 				<Stack className="top">
-// 					<Link
-// 						href={{
-// 							pathname: '/property/detail',
-// 							query: { id: property?._id },
-// 						}}
-// 					>
-// 						<img src={imagePath} alt="" />
-// 					</Link>
-// 					{property && property?.propertyRank > topPropertyRank && (
-// 						<Box component={'div'} className={'top-badge'}>
-// 							<img src="/img/icons/electricity.svg" alt="" />
-// 							<Typography>TOP</Typography>
-// 						</Box>
-// 					)}
-// 					<Box component={'div'} className={'price-box'}>
-// 						<Typography>${formatterStr(property?.propertyPrice)}</Typography>
-// 					</Box>
-// 				</Stack>

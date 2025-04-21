@@ -9,11 +9,11 @@ import { Property } from '../../types/property/property';
 import { PropertiesInquiry } from '../../types/property/property.input';
 import TrendPropertyCard from './TrendPropertyCard';
 import { useMutation, useQuery } from '@apollo/client';
+import { LIKE_TARGET_PROPERTY } from '../../../apollo/user/mutation';
 import { GET_PROPERTIES } from '../../../apollo/user/query';
 import { T } from '../../types/common';
-import { LIKE_TARGET_PROPERTY } from '../../../apollo/user/mutation';
-import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
 import { Message } from '../../enums/common.enum';
+import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
 
 interface TrendPropertiesProps {
 	initialInput: PropertiesInquiry;
@@ -47,14 +47,13 @@ const TrendProperties = (props: TrendPropertiesProps) => {
 			if (!id) return;
 			if (!user._id) throw new Error(Message.NOT_AUTHENTICATED);
 
-			//  execute likeTargetProperty Mutation
 			await likeTargetProperty({ variables: { input: id } });
-			// execute getPropertiesRefetch
+
 			await getPropertiesRefetch({ input: initialInput });
 
 			await sweetTopSmallSuccessAlert('success', 800);
 		} catch (err: any) {
-			console.log('ERROR,likePropertyHandler:', err.message);
+			console.log('Erron on likePropertyHandler', err);
 			sweetMixinErrorAlert(err.message).then();
 		}
 	};

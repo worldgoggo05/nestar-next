@@ -31,6 +31,7 @@ const MemberFollowers = (props: MemberFollowsProps) => {
 	const user = useReactiveVar(userVar);
 
 	/** APOLLO REQUESTS **/
+
 	const {
 		loading: getMemberFollowersLoading,
 		data: getMemberFollowersData,
@@ -38,13 +39,11 @@ const MemberFollowers = (props: MemberFollowsProps) => {
 		refetch: getMemberFollowersRefetch,
 	} = useQuery(GET_MEMBER_FOLLOWERS, {
 		fetchPolicy: 'network-only',
-		variables: {
-			input: followInquiry,
-		},
+		variables: { input: followInquiry },
 		notifyOnNetworkStatusChange: true,
-		onCompleted(data: T) {
-			setMemberFollowers(data.getMemberFollowers?.list);
-			setTotal(data.getMemberFollowers?.metaCounter?.[0]?.total);
+		onCompleted: (data: T) => {
+			setMemberFollowers(data?.getMemberFollowers?.list);
+			setTotal(data?.getMemberFollowers?.metaCounter[0]?.total);
 		},
 	});
 
@@ -170,7 +169,7 @@ const MemberFollowers = (props: MemberFollowsProps) => {
 								shape="circular"
 								color="primary"
 							/>
-						</Stack>      
+						</Stack>
 						<Stack className="total-result">
 							<Typography>{total} followers</Typography>
 						</Stack>

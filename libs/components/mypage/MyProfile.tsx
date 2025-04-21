@@ -81,17 +81,13 @@ const MyProfile: NextPage = ({ initialValues, ...props }: any) => {
 		try {
 			if (!user._id) throw new Error(Messages.error2);
 			updateData._id = user._id;
-			const result = await updateMember({
-				variables: {
-					input: updateData,
-				},
-			});
+			const result = await updateMember({ variables: { input: updateData } });
 
 			//@ts-ignore
 			const jwtToken = result.data.updateMember?.accessToken;
 			await updateStorage({ jwtToken });
 			updateUserInfo(result.data.updateMember?.accessToken);
-			await sweetMixinSuccessAlert('Information update successfully');
+			await sweetMixinSuccessAlert('information updated successfully.');
 		} catch (err: any) {
 			sweetErrorHandling(err).then();
 		}

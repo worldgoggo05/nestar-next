@@ -9,8 +9,8 @@ import { T } from '../../types/common';
 import { BoardArticle } from '../../types/board-article/board-article';
 import { LIKE_TARGET_BOARD_ARTICLE } from '../../../apollo/user/mutation';
 import { GET_BOARD_ARTICLES } from '../../../apollo/user/query';
-import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
 import { Messages } from '../../config';
+import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
 
 const MyArticles: NextPage = ({ initialInput, ...props }: T) => {
 	const device = useDeviceDetect();
@@ -28,13 +28,11 @@ const MyArticles: NextPage = ({ initialInput, ...props }: T) => {
 	const {
 		loading: boardArticlesLoading,
 		data: boardArticlesData,
-		error: getBoardArticlesError,
+		error: boardArticlesError,
 		refetch: boardArticlesRefetch,
 	} = useQuery(GET_BOARD_ARTICLES, {
 		fetchPolicy: 'network-only',
-		variables: {
-			input: searchCommunity,
-		},
+		variables: { input: searchCommunity },
 		notifyOnNetworkStatusChange: true,
 		onCompleted(data: T) {
 			setBoardArticles(data?.getBoardArticles?.list);
@@ -47,23 +45,17 @@ const MyArticles: NextPage = ({ initialInput, ...props }: T) => {
 		setSearchCommunity({ ...searchCommunity, page: value });
 	};
 
-	const likeBoArticleHandler = async (e: any, user: any, id: string) => {
+	const likeBoArticleHandler = async (e: any, user: T, id: string) => {
 		try {
 			e.stopPropagation();
 			if (!id) return;
-			if (!user?._id) throw new Error(Messages.error2);
+			if (!user._id) throw new Error(Messages.error2);
 
-			await likeTargetBoardArticle({
-				variables: {
-					input: id,
-				},
-			});
-
+			await likeTargetBoardArticle({ variables: { input: id } });
 			await boardArticlesRefetch({ input: searchCommunity });
-
-			await sweetTopSmallSuccessAlert('sucess!', 750);
+			await sweetTopSmallSuccessAlert('Success!', 750);
 		} catch (err: any) {
-			console.log('Error on likeBoArticleHandler', err.message);
+			console.log('ERROR, likeBoArticleHandler', err);
 			sweetMixinErrorAlert(err.message).then();
 		}
 	};
@@ -85,9 +77,9 @@ const MyArticles: NextPage = ({ initialInput, ...props }: T) => {
 							return (
 								<CommunityCard
 									boardArticle={boardArticle}
+									likeArticleHandler={likeBoArticleHandler}
 									key={boardArticle?._id}
 									size={'small'}
-									likeArticleHandler={likeBoArticleHandler}
 								/>
 							);
 						})

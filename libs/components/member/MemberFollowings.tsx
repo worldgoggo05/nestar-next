@@ -21,7 +21,7 @@ interface MemberFollowingsProps {
 }
 
 const MemberFollowings = (props: MemberFollowingsProps) => {
-	const { initialInput, subscribeHandler, unsubscribeHandler, likeMemberHandler, redirectToMemberPageHandler } = props;
+	const { initialInput, subscribeHandler, likeMemberHandler, unsubscribeHandler, redirectToMemberPageHandler } = props;
 	const device = useDeviceDetect();
 	const router = useRouter();
 	const [total, setTotal] = useState<number>(0);
@@ -31,24 +31,22 @@ const MemberFollowings = (props: MemberFollowingsProps) => {
 	const user = useReactiveVar(userVar);
 
 	/** APOLLO REQUESTS **/
-		const {
-			loading: getMemberFollowingsLoading,
-			data:  getMemberFollowingsData,
-			error: getMemberFollowersError,
-			refetch: getMemberFollowingsRefetch,
-		} = useQuery(GET_MEMBER_FOLLOWINGS, {
-			fetchPolicy: 'network-only',
-			variables: {
-				input: followInquiry,
-			},
-			skip: !followInquiry?.search?.followerId,
-			notifyOnNetworkStatusChange: true,
-			onCompleted(data: T) {
-				setMemberFollowings(data.getMemberFollowings?.list);
-				setTotal(data.getMemberFollowings?.metaCounter?.[0]?.total);
-			},
-		});
 
+	const {
+		loading: getMemberFollowingsLoading,
+		data: getMemberFollowingsData,
+		error: getMemberFollowingsError,
+		refetch: getMemberFollowingsRefetch,
+	} = useQuery(GET_MEMBER_FOLLOWINGS, {
+		fetchPolicy: 'network-only',
+		variables: { input: followInquiry },
+		// skip: !followInquiry?.search?.followerId,
+		notifyOnNetworkStatusChange: true,
+		onCompleted: (data: T) => {
+			setMemberFollowings(data?.getMemberFollowings?.list);
+			setTotal(data?.getMemberFollowings?.metaCounter[0]?.total);
+		},
+	});
 
 	/** LIFECYCLES **/
 	useEffect(() => {

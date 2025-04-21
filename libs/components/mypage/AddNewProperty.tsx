@@ -24,6 +24,7 @@ const AddProperty = ({ initialValues, ...props }: any) => {
 	const user = useReactiveVar(userVar);
 
 	/** APOLLO REQUESTS **/
+
 	const [createProperty] = useMutation(CREATE_PROPERTY);
 	const [updateProperty] = useMutation(UPDATE_PROPERTY);
 
@@ -34,9 +35,7 @@ const AddProperty = ({ initialValues, ...props }: any) => {
 		refetch: getPropertyRefetch,
 	} = useQuery(GET_PROPERTY, {
 		fetchPolicy: 'network-only',
-		variables: {
-			input: router.query.propertyId,
-		},
+		variables: { input: router.query.propertyId },
 	});
 
 	/** LIFECYCLES **/
@@ -138,7 +137,7 @@ const AddProperty = ({ initialValues, ...props }: any) => {
 				},
 			});
 
-			await sweetMixinSuccessAlert('This property has been created successfully.');
+			await sweetMixinSuccessAlert('This property has been created successfully!');
 			await router.push({
 				pathname: '/mypage',
 				query: {
@@ -159,8 +158,7 @@ const AddProperty = ({ initialValues, ...props }: any) => {
 					input: insertPropertyData,
 				},
 			});
-
-			await sweetMixinSuccessAlert('This property has been update successfully.');
+			await sweetMixinSuccessAlert('This property has been updated successfully!');
 			await router.push({
 				pathname: '/mypage',
 				query: {

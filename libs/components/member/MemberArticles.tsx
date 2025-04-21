@@ -10,8 +10,8 @@ import { BoardArticlesInquiry } from '../../types/board-article/board-article.in
 import { useMutation, useQuery } from '@apollo/client';
 import { LIKE_TARGET_BOARD_ARTICLE } from '../../../apollo/user/mutation';
 import { GET_BOARD_ARTICLES } from '../../../apollo/user/query';
-import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
 import { Messages } from '../../config';
+import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
 
 const MemberArticles: NextPage = ({ initialInput, ...props }: any) => {
 	const device = useDeviceDetect();
@@ -27,17 +27,15 @@ const MemberArticles: NextPage = ({ initialInput, ...props }: any) => {
 	const {
 		loading: boardArticlesLoading,
 		data: boardArticlesData,
-		error: getBoardArticlesError,
+		error: boardArticlesError,
 		refetch: boardArticlesRefetch,
 	} = useQuery(GET_BOARD_ARTICLES, {
 		fetchPolicy: 'network-only',
-		variables: {
-			input: searchFilter,
-		},
+		variables: { input: searchFilter },
 		notifyOnNetworkStatusChange: true,
-		onCompleted(data: T) {
-			setMemberBoArticles(data.getBoardArticles?.list);
-			setTotal(data.getBoardArticles?.metaCounter?.[0]?.total || 0);
+		onCompleted: (data: T) => {
+			setMemberBoArticles(data?.getBoardArticles?.list);
+			setTotal(data?.getBoardArticles?.metaCounter?.[0]?.total || 0);
 		},
 	});
 
@@ -58,14 +56,12 @@ const MemberArticles: NextPage = ({ initialInput, ...props }: any) => {
 			if (!user._id) throw new Error(Messages.error2);
 
 			await likeTargetBoardArticle({
-				variables: {
-					input: id,
-				},
+				variables: { input: id },
 			});
 			await boardArticlesRefetch({ input: searchFilter });
-			await sweetTopSmallSuccessAlert('success', 800);
+			await sweetTopSmallSuccessAlert('success!', 800);
 		} catch (err: any) {
-			console.log('ERROR,likePropertyHandler:', err.message);
+			console.log('Error likeArticleHandler', err.message);
 			sweetMixinErrorAlert(err.message).then();
 		}
 	};
@@ -91,8 +87,8 @@ const MemberArticles: NextPage = ({ initialInput, ...props }: any) => {
 						return (
 							<CommunityCard
 								boardArticle={boardArticle}
-								likeArticleHandler={likeArticleHandler}
 								key={boardArticle?._id}
+								likeArticleHandler={likeArticleHandler}
 								size={'small'}
 							/>
 						);

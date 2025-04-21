@@ -5,14 +5,13 @@ import useDeviceDetect from '../../hooks/useDeviceDetect';
 import Link from 'next/link';
 import { Member } from '../../types/member/member';
 import { REACT_APP_API_URL } from '../../config';
-import { GET_MEMBER } from '../../../apollo/user/query';
 import { useQuery } from '@apollo/client';
+import { GET_MEMBER } from '../../../apollo/user/query';
 import { T } from '../../types/common';
 
 interface MemberMenuProps {
 	subscribeHandler: any;
 	unsubscribeHandler: any;
-
 }
 
 const MemberMenu = (props: MemberMenuProps) => {
@@ -24,23 +23,20 @@ const MemberMenu = (props: MemberMenuProps) => {
 	const { memberId } = router.query;
 
 	/** APOLLO REQUESTS **/
-		const {
-			loading: getMemberLoading,
-			data: getMemberData,
-			error: getMemberError,
-			refetch: getMemberRefetch,
-		} = useQuery(GET_MEMBER, {
-			fetchPolicy: 'network-only',
-			variables: {
-				input: memberId,
-			},
-			notifyOnNetworkStatusChange: true,
-			onCompleted(data: T) {
-				setMember(data.getMember);
 
-			},
-		});
-
+	const {
+		loading: getMemberLoading,
+		data: getMemberData,
+		error: getMemberError,
+		refetch: getMemberRefetch,
+	} = useQuery(GET_MEMBER, {
+		fetchPolicy: 'network-only',
+		variables: { input: memberId },
+		notifyOnNetworkStatusChange: true,
+		onCompleted: (data: T) => {
+			setMember(data?.getMember);
+		},
+	});
 
 	if (device === 'mobile') {
 		return <div>MEMBER MENU MOBILE</div>;

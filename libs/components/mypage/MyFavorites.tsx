@@ -8,8 +8,8 @@ import { T } from '../../types/common';
 import { useMutation, useQuery } from '@apollo/client';
 import { LIKE_TARGET_PROPERTY } from '../../../apollo/user/mutation';
 import { GET_FAVORITES } from '../../../apollo/user/query';
-import { sweetErrorHandling, sweetMixinErrorAlert } from '../../sweetAlert';
 import { Messages } from '../../config';
+import { sweetMixinErrorAlert } from '../../sweetAlert';
 
 const MyFavorites: NextPage = () => {
 	const device = useDeviceDetect();
@@ -27,13 +27,11 @@ const MyFavorites: NextPage = () => {
 		refetch: getFavoritesRefetch,
 	} = useQuery(GET_FAVORITES, {
 		fetchPolicy: 'network-only',
-		variables: {
-			input: searchFavorites,
-		},
+		variables: { input: searchFavorites },
 		notifyOnNetworkStatusChange: true,
-		onCompleted(data: T) {
-			setMyFavorites(data.getFavorites?.list);
-			setTotal(data.getFavorites?.metaCounter?.[0]?.total || 0);
+		onCompleted: (data: T) => {
+			setMyFavorites(data?.getFavorites?.list);
+			setTotal(data?.getFavorites?.metaCounter[0]?.total || 0);
 		},
 	});
 
@@ -42,19 +40,15 @@ const MyFavorites: NextPage = () => {
 		setSearchFavorites({ ...searchFavorites, page: value });
 	};
 
-	const likePropertyHandler = async (user: any, id: string) => {
+	const likePropertyHandler = async (user: T, id: string) => {
 		try {
 			if (!id) return;
 			if (!user._id) throw new Error(Messages.error2);
 
-			await likeTargetProperty({
-				variables: {
-					input: id,
-				},
-			});
+			await likeTargetProperty({ variables: { input: id } });
 			await getFavoritesRefetch({ input: searchFavorites });
 		} catch (err: any) {
-			console.log('Error on likePropertyHandler:', err.member);
+			console.log('ERROR, likePropertyHandler', err);
 			sweetMixinErrorAlert(err.message).then();
 		}
 	};
