@@ -22,7 +22,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { BoardArticle } from '../../libs/types/board-article/board-article';
 import { CREATE_COMMENT, LIKE_TARGET_BOARD_ARTICLE, UPDATE_COMMENT } from '../../apollo/user/mutation';
-import { GET_BOARD_ARTICLE, GET_COMMENTS } from '../../apollo/user/query';
+import { GET_BOARD_ARTICLE, GET_BOARD_ARTICLES, GET_COMMENTS } from '../../apollo/user/query';
 import { Messages } from '../../libs/config';
 import {
 	sweetConfirmAlert,
@@ -67,19 +67,20 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 	const [boardArticle, setBoardArticle] = useState<BoardArticle>();
 
 	/** APOLLO REQUESTS **/
+
 	const [likeTargetBoardArticle] = useMutation(LIKE_TARGET_BOARD_ARTICLE);
 	const [createComment] = useMutation(CREATE_COMMENT);
 	const [updateComment] = useMutation(UPDATE_COMMENT);
 
 	const {
-		loading: boardArticleLoading, // Backendan data kelayotganda Loading... animation korsatadi
-		data: boardArticleData, // datalarni cache saqlayapmiz
-		error: getBoardArticleError, // data kiriwida error bo`lsa => handle | data kirsa "onCompleted" iwga tuwadi
-		refetch: boardArticleRefetch, // ohirgi ma`lumotni Backenddan talab qivoliw
+		loading: boardArticleLoading,
+		data: boardArticleData,
+		error: boardArticleError,
+		refetch: boardArticleRefetch,
 	} = useQuery(GET_BOARD_ARTICLE, {
-		fetchPolicy: 'network-only', // faqat-serverdan data olib keladi va kewlab ham beradi
-		variables: { input: articleId }, //
-		notifyOnNetworkStatusChange: true, // by default: false. datalar qayta update bo`lganda iwga tuwadi
+		fetchPolicy: 'network-only',
+		variables: { input: articleId },
+		notifyOnNetworkStatusChange: true,
 		onCompleted: (data: T) => {
 			setBoardArticle(data?.getBoardArticle);
 			if (data?.getBoardArticle?.memberData?.memberImage) {
@@ -88,14 +89,13 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 		},
 	});
 
-	/** COMMENTS **/
 	const {
 		loading: getCommentsLoading,
 		data: getCommentsData,
 		error: getCommentsError,
 		refetch: getCommentsRefetch,
 	} = useQuery(GET_COMMENTS, {
-		fetchPolicy: 'cache-and-network', //
+		fetchPolicy: 'cache-and-network',
 		variables: { input: searchFilter },
 		notifyOnNetworkStatusChange: true,
 		onCompleted: (data: T) => {
@@ -103,7 +103,6 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 			setTotal(data?.getComments?.metaCounter[0]?.total || 0);
 		},
 	});
-
 	/** LIFECYCLES **/
 	useEffect(() => {
 		if (articleId) setSearchFilter({ ...searchFilter, search: { commentRefId: articleId } });
@@ -121,25 +120,20 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 		);
 	};
 
-	//                                 user->Auth bolganmi?, id: qaysi agent ga like bosyapti? */
-	const likeBoardArticleHandler = async (user: any, id: any) => {
+	const likeBoArticleHandler = async (user: any, id: any) => {
 		try {
 			if (likeLoading) return;
 			if (!id) return;
 			if (!user._id) throw new Error(Messages.error2);
-
 			setLikeLoading(true);
 
-			//execute likeTargetBoardArticles  Mutationni ishga tushirish
-			// qaysi article like bosmoqchimiz
-			await likeTargetBoardArticle({ variables: { input: id } }); // POSTMANdagi variable=> input: id
-			// execute boardArticlesRefetch
-			// oxirgi qiymatlarni qayta chaqiriw 
-			await boardArticleRefetch({ input: articleId }); // likedan keyin Articles listni to`liq refetch qilamiz
+			await likeTargetBoardArticle({ variables: { input: id } });
+
+			await boardArticleRefetch({ input: articleId });
 
 			await sweetTopSmallSuccessAlert('success', 800);
 		} catch (err: any) {
-			console.log('ERROR,likeArticleHandler:', err.message);
+			console.log('Erron on likeBoArticleHandler', err);
 			sweetMixinErrorAlert(err.message).then();
 		} finally {
 			setLikeLoading(false);
@@ -149,7 +143,7 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 	const createCommentHandler = async () => {
 		if (!comment) return;
 		try {
-			if (!user._id) throw new Error(Messages.error2); // Plz login first
+			if (!user._id) throw new Error(Messages.error2);
 			const commentInput: CommentInput = {
 				commentGroup: CommentGroup.ARTICLE,
 				commentRefId: articleId,
@@ -159,26 +153,26 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 			await getCommentsRefetch({ input: searchFilter });
 			await boardArticleRefetch({ input: articleId });
 			setComment('');
-			await sweetMixinSuccessAlert('Successfulle commented!');
+			await sweetMixinSuccessAlert('Successfully commented!');
 		} catch (error: any) {
-			sweetMixinErrorAlert(error.message);
+			sweetMixinErrorAlert(error.message).then();
 		}
 	};
 
 	const updateButtonHandler = async (commentId: string, commentStatus?: CommentStatus.DELETE) => {
 		try {
-			if (!user._id) throw new Error(Messages.error2); // Plz login first
+			if (!user?._id) throw new Error(Messages.error2);
 			if (!commentId) throw new Error('Select a comment to update!');
 			if (updatedComment === comments?.find((comment) => comment?._id === commentId)?.commentContent) return;
-
 			const updateData: CommentUpdate = {
 				_id: commentId,
 				...(commentStatus && { commentStatus: commentStatus }),
 				...(updatedComment && { commentContent: updatedComment }),
 			};
 
-			if (!updateData?.commentContent && !updateData?.commentStatus)
+			if (!updateData?.commentContent && !updateData?.commentStatus) {
 				throw new Error('Provide data to update your comment!');
+			}
 
 			if (commentStatus) {
 				if (await sweetConfirmAlert('Do you want to delete the comment?')) {
@@ -188,7 +182,9 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 						},
 					});
 					await sweetMixinSuccessAlert('Successfully deleted!');
-				} else return;
+				} else {
+					return;
+				}
 			} else {
 				await updateComment({
 					variables: {
@@ -197,7 +193,6 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 				});
 				await sweetMixinSuccessAlert('Successfully updated!');
 			}
-
 			await getCommentsRefetch({ input: searchFilter });
 		} catch (error: any) {
 			sweetMixinErrorAlert(error.message);
@@ -324,12 +319,13 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 											</Stack>
 										</Stack>
 										<Stack className="info">
-										<Stack className="icon-info">
-												{boardArticle?.meLiked && boardArticle?.meLiked[0]?.myFavorite ? (
-													<ThumbUpAltIcon onClick={() => likeBoardArticleHandler(user, boardArticle?._id)} />
+											<Stack className="icon-info">
+												{boardArticle?.meLiked && boardArticle.meLiked[0]?.myFavorite ? (
+													<ThumbUpAltIcon onClick={() => likeBoArticleHandler(user, boardArticle?._id)} />
 												) : (
-													<ThumbUpOffAltIcon onClick={() => likeBoardArticleHandler(user, boardArticle?._id)} />
+													<ThumbUpOffAltIcon onClick={() => likeBoArticleHandler(user, boardArticle?._id)} />
 												)}
+
 												<Typography className="text">{boardArticle?.articleLikes}</Typography>
 											</Stack>
 											<Stack className="divider"></Stack>
@@ -340,6 +336,7 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 											<Stack className="divider"></Stack>
 											<Stack className="icon-info">
 												{total > 0 ? <ChatIcon /> : <ChatBubbleOutlineRoundedIcon />}
+
 												<Typography className="text">{total}</Typography>
 											</Stack>
 										</Stack>
@@ -350,7 +347,11 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 									<Stack className="like-and-dislike">
 										<Stack className="top">
 											<Button>
-												{boardArticle?.meLiked ? <ThumbUpAltIcon /> : <ThumbUpOffAltIcon />}
+												{boardArticle?.meLiked && boardArticle?.meLiked[0]?.myFavorite ? (
+													<ThumbUpAltIcon onClick={() => likeBoArticleHandler(user, boardArticle?._id)} />
+												) : (
+													<ThumbUpOffAltIcon onClick={() => likeBoArticleHandler(user, boardArticle?._id)} />
+												)}
 												<Typography className="text">{boardArticle?.articleLikes}</Typography>
 											</Button>
 										</Stack>
@@ -413,7 +414,7 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 																<DeleteForeverIcon sx={{ color: '#757575', cursor: 'pointer' }} />
 															</IconButton>
 															<IconButton
-																onClick={(e: any) => {
+																onClick={(e) => {
 																	setUpdatedComment(commentData?.commentContent);
 																	setUpdatedCommentWordsCnt(commentData?.commentContent?.length);
 																	setUpdatedCommentId(commentData?._id);

@@ -19,10 +19,9 @@ import { CommentGroup } from '../../libs/enums/comment.enum';
 import { Messages, REACT_APP_API_URL } from '../../libs/config';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { CREATE_COMMENT, LIKE_TARGET_PROPERTY } from '../../apollo/user/mutation';
-import { GET_MEMBER, GET_PROPERTIES } from '../../apollo/user/query';
+import { GET_COMMENTS, GET_MEMBER, GET_PROPERTIES } from '../../apollo/user/query';
 import { T } from '../../libs/types/common';
-import { GET_COMMENTS } from '../../apollo/admin/query';
-import { Message } from '@mui/icons-material';
+import { Message } from '../../libs/enums/common.enum';
 
 export const getStaticProps = async ({ locale }: any) => ({
 	props: {
@@ -50,8 +49,8 @@ const AgentDetail: NextPage = ({ initialInput, initialComment, ...props }: any) 
 
 	/** APOLLO REQUESTS **/
 
-	const [createComment] = useMutation(CREATE_COMMENT);
 	const [likeTargetProperty] = useMutation(LIKE_TARGET_PROPERTY);
+	const [createComment] = useMutation(CREATE_COMMENT);
 
 	const {
 		loading: getMemberLoading,
@@ -62,26 +61,12 @@ const AgentDetail: NextPage = ({ initialInput, initialComment, ...props }: any) 
 		fetchPolicy: 'network-only',
 		variables: { input: agentId },
 		skip: !agentId,
+		notifyOnNetworkStatusChange: true,
 		onCompleted: (data: T) => {
 			setAgent(data?.getMember);
-			setSearchFilter({
-				...searchFilter,
-				search: {
-					memberId: data?.getMember?._id,
-				},
-			});
-
-			setCommentInquiry({
-				...commentInquiry,
-				search: {
-					commentRefId: data?.getMember?._id,
-				},
-			});
-
-			setInsertCommentData({
-				...insertCommentData,
-				commentRefId: data?.getMember?._id,
-			});
+			setSearchFilter({ ...searchFilter, search: { memberId: data?.getMember?._id } });
+			setCommentInquiry({ ...commentInquiry, search: { commentRefId: data?.getMember?._id } });
+			setInsertCommentData({ ...insertCommentData, commentRefId: data?.getMember?._id });
 		},
 	});
 
@@ -113,7 +98,7 @@ const AgentDetail: NextPage = ({ initialInput, initialComment, ...props }: any) 
 		notifyOnNetworkStatusChange: true,
 		onCompleted: (data: T) => {
 			setAgentComments(data?.getComments?.list);
-			setCommentTotal(data?.getComments?.metaCounter[0].total ?? 0);
+			setCommentTotal(data?.getComments?.metaCounter[0]?.total ?? 0);
 		},
 	});
 
@@ -124,10 +109,9 @@ const AgentDetail: NextPage = ({ initialInput, initialComment, ...props }: any) 
 
 	useEffect(() => {
 		if (searchFilter.search.memberId) {
-			getPropertiesRefetch({ variables: { input: commentInquiry } }).then();
+			getPropertiesRefetch({ variables: { input: searchFilter } }).then();
 		}
 	}, [searchFilter]);
-
 	useEffect(() => {
 		if (commentInquiry.search.commentRefId) {
 			getCommentsRefetch({ variables: { input: commentInquiry } }).then();
@@ -158,11 +142,7 @@ const AgentDetail: NextPage = ({ initialInput, initialComment, ...props }: any) 
 		try {
 			if (!user._id) throw new Error(Messages.error2);
 			if (user._id === agentId) throw new Error('Cannot write a review for yourself');
-			await createComment({
-				variables: {
-					input: insertCommentData,
-				},
-			});
+			await createComment({ variables: { input: insertCommentData } });
 
 			setInsertCommentData({ ...insertCommentData, commentContent: '' });
 
@@ -172,21 +152,18 @@ const AgentDetail: NextPage = ({ initialInput, initialComment, ...props }: any) 
 		}
 	};
 
-	const likePropertyHandler = async (user: any, id: string) => {
+	const likePropertyHandler = async (user: T, id: string) => {
 		try {
 			if (!id) return;
-			if (!user._id) throw new Error(Messages.error2);
+			if (!user._id) throw new Error(Message.NOT_AUTHENTICATED);
 
-			await likeTargetProperty({
-				variables: {
-					input: id,
-				},
-			});
+			await likeTargetProperty({ variables: { input: id } });
 
 			await getPropertiesRefetch({ input: searchFilter });
+
 			await sweetTopSmallSuccessAlert('success', 800);
 		} catch (err: any) {
-			console.log('ERROR, likePropertyHandler:', err.message);
+			console.log('Erron on likePropertyHandler', err);
 			sweetMixinErrorAlert(err.message).then();
 		}
 	};
@@ -217,8 +194,8 @@ const AgentDetail: NextPage = ({ initialInput, initialComment, ...props }: any) 
 									<div className={'wrap-main'} key={property?._id}>
 										<PropertyBigCard
 											property={property}
-											likePropertyHandler={likePropertyHandler}
 											key={property?._id}
+											likePropertyHandler={likePropertyHandler}
 										/>
 									</div>
 								);

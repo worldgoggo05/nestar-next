@@ -35,40 +35,37 @@ const AdminUsers: NextPage = ({ initialInquiry, ...props }: any) => {
 	/** APOLLO REQUESTS **/
 	const [updateMemberByAdmin] = useMutation(UPDATE_MEMBER_BY_ADMIN);
 
-		const {
-			loading: getAllMembersByAdminLoading,
-			data: getAllMembersByAdminData,
-			error: getAllMembersByAdminError,
-			refetch: getAllMembersRefetch,
-		} = useQuery(GET_ALL_MEMBERS_BY_ADMIN, {
-			fetchPolicy: 'network-only',
-			variables: {
-				input: membersInquiry,
-			},
-			notifyOnNetworkStatusChange: true,
-			onCompleted(data: T) {
-				setMembers(data.getAllMembersByAdmin?.list);
-				setMembersTotal(data.getAllMembersByAdmin?.metaCounter?.[0]?.total ?? 0);
-			},
-		});
-
+	const {
+		loading: getAllMembersByAdminLoading,
+		data: getAllMembersByAdminData,
+		error: getAllMembersByAdminError,
+		refetch: getAllMembersByAdminRefetch,
+	} = useQuery(GET_ALL_MEMBERS_BY_ADMIN, {
+		fetchPolicy: 'network-only',
+		variables: { input: membersInquiry },
+		notifyOnNetworkStatusChange: true,
+		onCompleted: (data: T) => {
+			setMembers(data?.getAllMembersByAdmin?.list);
+			setMembersTotal(data?.getAllMembersByAdmin?.metaCounter[0]?.total ?? 0);
+		},
+	});
 
 	/** LIFECYCLES **/
 	useEffect(() => {
-		getAllMembersRefetch({ input: membersInquiry }).then();
+		getAllMembersByAdminRefetch({ input: membersInquiry }).then();
 	}, [membersInquiry]);
 
 	/** HANDLERS **/
 	const changePageHandler = async (event: unknown, newPage: number) => {
 		membersInquiry.page = newPage + 1;
-		await getAllMembersRefetch({ input: membersInquiry})
+		await getAllMembersByAdminRefetch({ input: membersInquiry });
 		setMembersInquiry({ ...membersInquiry });
 	};
 
 	const changeRowsPerPageHandler = async (event: React.ChangeEvent<HTMLInputElement>) => {
 		membersInquiry.limit = parseInt(event.target.value, 10);
 		membersInquiry.page = 1;
-			await getAllMembersRefetch({ input: membersInquiry });
+		await getAllMembersByAdminRefetch({ input: membersInquiry });
 		setMembersInquiry({ ...membersInquiry });
 	};
 
@@ -107,13 +104,8 @@ const AdminUsers: NextPage = ({ initialInquiry, ...props }: any) => {
 
 	const updateMemberHandler = async (updateData: MemberUpdate) => {
 		try {
-			await updateMemberByAdmin({
-				variables: {
-					input:updateData
-				}
-			})
+			await updateMemberByAdmin({ variables: { input: updateData } });
 			menuIconCloseHandler();
-			await getAllMembersRefetch({input:membersInquiry})
 		} catch (err: any) {
 			sweetErrorHandling(err).then();
 		}
@@ -228,7 +220,7 @@ const AdminUsers: NextPage = ({ initialInquiry, ...props }: any) => {
 																text: '',
 															},
 														});
-														await getAllMembersRefetch({input:membersInquiry})
+														await getAllMembersByAdminRefetch({ input: membersInquiry });
 													}}
 												/>
 											)}

@@ -15,12 +15,11 @@ import { userVar } from '../../apollo/store';
 import MyMenu from '../../libs/components/mypage/MyMenu';
 import WriteArticle from '../../libs/components/mypage/WriteArticle';
 import MemberFollowers from '../../libs/components/member/MemberFollowers';
-import { sweetErrorHandling, sweetMixinErrorAlert, sweetTopSmallSuccessAlert, sweetTopSuccessAlert } from '../../libs/sweetAlert';
+import { sweetErrorHandling, sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
 import MemberFollowings from '../../libs/components/member/MemberFollowings';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { LIKE_TARGET_MEMBER, SUBSCRIBE, UNSUBSCRIBE } from '../../apollo/user/mutation';
 import { Messages } from '../../libs/config';
-
 
 export const getStaticProps = async ({ locale }: any) => ({
 	props: {
@@ -38,7 +37,6 @@ const MyPage: NextPage = () => {
 	const [subscribe] = useMutation(SUBSCRIBE);
 	const [unsubscribe] = useMutation(UNSUBSCRIBE);
 	const [likeTargetMember] = useMutation(LIKE_TARGET_MEMBER);
-
 	/** LIFECYCLES **/
 	useEffect(() => {
 		if (!user._id) router.push('/').then();
@@ -47,18 +45,15 @@ const MyPage: NextPage = () => {
 	/** HANDLERS **/
 	const subscribeHandler = async (id: string, refetch: any, query: any) => {
 		try {
+			console.log('id', id);
 			if (!id) throw new Error(Messages.error1);
 			if (!user._id) throw new Error(Messages.error2);
 
 			await subscribe({
-				variables: {
-					input: id,
-				},
+				variables: { input: id },
 			});
-			await sweetTopSuccessAlert('Subscribed!', 800);
-			await refetch({
-				input: query,
-			});
+			await sweetTopSmallSuccessAlert('Subscribed!', 800);
+			await refetch({ input: query });
 		} catch (err: any) {
 			sweetErrorHandling(err).then();
 		}
@@ -66,41 +61,31 @@ const MyPage: NextPage = () => {
 
 	const unsubscribeHandler = async (id: string, refetch: any, query: any) => {
 		try {
-			console.log('id:', id);
+			console.log('id', id);
 			if (!id) throw new Error(Messages.error1);
 			if (!user._id) throw new Error(Messages.error2);
 
 			await unsubscribe({
-				variables: {
-					input: id,
-				},
+				variables: { input: id },
 			});
-			await sweetTopSuccessAlert('UnSubscribed!', 800);
-			await refetch({
-				input: query,
-			});
+			await sweetTopSmallSuccessAlert('Unsubscribed!', 800);
+			await refetch({ input: query });
 		} catch (err: any) {
 			sweetErrorHandling(err).then();
 		}
 	};
-
 	const likeMemberHandler = async (id: string, refetch: any, query: any) => {
 		try {
-			console.log('id:', id);
-			if (!id) return;
+			console.log('id', id);
+			if (!id) throw new Error(Messages.error1);
 			if (!user._id) throw new Error(Messages.error2);
 
 			await likeTargetMember({
-				variables: {
-					input: id,
-				},
+				variables: { input: id },
 			});
-			await sweetTopSmallSuccessAlert('UnSubscribed!', 800);
-			await refetch({
-				input: id,
-			});
+			await sweetTopSmallSuccessAlert('Success!', 800);
+			await refetch({ input: query });
 		} catch (err: any) {
-			console.log('ERROR,likeMemberHandler:', err.message);
 			sweetMixinErrorAlert(err.message).then();
 		}
 	};
@@ -146,7 +131,7 @@ const MyPage: NextPage = () => {
 										<MemberFollowings
 											subscribeHandler={subscribeHandler}
 											unsubscribeHandler={unsubscribeHandler}
-												likeMemberHandler={likeMemberHandler}
+											likeMemberHandler={likeMemberHandler}
 											redirectToMemberPageHandler={redirectToMemberPageHandler}
 										/>
 									)}
